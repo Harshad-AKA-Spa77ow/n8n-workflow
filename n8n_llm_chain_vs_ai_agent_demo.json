@@ -1,0 +1,280 @@
+{
+  "name": "n8n - LLM Chain vs AI Agent Demo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "67197f8f-9979-4f76-aec7-24051f5a712b",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "1ff83189-4acb-4622-b6e3-d3449b0ad48f"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.chatInput }}",
+                    "rightValue": "agent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.chatInput }}",
+                    "rightValue": "chain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "id": "433ef98a-a6d5-4db8-bf8d-7d175ee34140",
+      "name": "Choose Chain or Agent",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a helpful AI agent. You can use the connected Wikipedia tool when the user asks for factual information that would benefit from a Wikipedia lookup. Explain what you found clearly and concisely. This workflow is being used to demonstrate how an AI agent can decide whether to use a tool."
+        }
+      },
+      "id": "0a97abd2-eaa4-4a54-864b-a04a8936a82a",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a helpful language model. Answer the user's request directly. Do not call tools or take autonomous actions. This workflow is being used to demonstrate an LLM chain."
+        },
+        "hasOutputParser": false
+      },
+      "id": "10d088e5-f76a-4c4c-bef2-ca0d6ec18724",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        560,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "id": "ef9c526d-e7eb-4840-93c1-78c5cac18ec6",
+      "name": "Groq Chat Model - Agent",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        520,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "id": "b4dbbbed-77bc-4298-8a66-97f653bcedea",
+      "name": "Groq Chat Model - Chain",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        520,
+        560
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f3a6ccce-7fcb-4122-aa58-8a30009fce30",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        760,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "fromInput",
+        "sessionKey": "={{ $json.sessionId || 'demo-session' }}",
+        "contextWindowLength": 5
+      },
+      "id": "d7bfc34b-ac38-4d9c-9608-0956a11877e0",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Try these examples\n\nUse the chat at the bottom of the workflow.\n\n**Agent examples**\n- `agent: Tell me about the history of n8n`\n- `agent: Find information about Node.js`\n\n**Chain examples**\n- `chain: Explain what an API is`\n- `chain: Compare REST and GraphQL`\n\nThe agent can decide to use the Wikipedia tool. The chain simply generates a response from the model.",
+        "height": 300,
+        "width": 420,
+        "color": 5
+      },
+      "id": "bc04c8d3-763e-4db3-aad0-bacf1b777ccb",
+      "name": "How to Test",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Connect your Groq credential** to both Groq Chat Model nodes before running the workflow.",
+        "height": 120,
+        "width": 360,
+        "color": 2
+      },
+      "id": "898e1917-adab-40a1-a37a-b5666587e011",
+      "name": "Credentials Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -160
+      ]
+    }
+  ],
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Choose Chain or Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Choose Chain or Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model - Agent": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model - Chain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
