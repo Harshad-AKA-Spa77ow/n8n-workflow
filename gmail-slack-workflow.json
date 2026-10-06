@@ -1,0 +1,409 @@
+{
+  "name": "Google Sheets - Gmail - Slack Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        80
+      ],
+      "id": "b496c268-498f-4030-80c5-c232931d7191",
+      "name": "Wait",
+      "webhookId": "c958f8e9-2add-4156-96cf-2bf477bcae05"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Wait').item.json['Email Address'] }}",
+        "subject": "={{ $json.output.Subject }}",
+        "message": "={{ $json.output.Body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        -96
+      ],
+      "id": "9595da16-dd82-48a4-b844-6bb4998b85fb",
+      "name": "Send a message",
+      "webhookId": "e53259cd-2f02-441e-ab71-b4652d41d3e4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PJ8QXhiwWwbvTEGd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Serina, a professional and friendly Customer Service Representative at Pirates Corp, an AI consulting and technology services company.\n\nYour task is to write a personalized follow-up email to a new lead who submitted a form on the Pirates Corp website.\n\nIMPORTANT EMAIL STYLE:\n- Write like a real professional customer service representative, not like an AI.\n- Keep the email concise and natural.\n- Do not repeat every piece of information submitted by the lead.\n- Use only the details that are relevant to making the email personalized.\n- Do NOT mention the lead's phone number in the email.\n- Do NOT mention their email address in the email.\n- Do NOT say things like \"I see that you entered...\" or \"I noticed that you provided...\"\n- Do NOT make the email sound like a form submission summary.\n- Do not make exaggerated claims or promises.\n- Do not invent services, prices, timelines, features, or information that the lead did not provide.\n- Address the lead by their first name only.\n- If the name is missing or unclear, use \"Hello\" without a name.\n- Be warm, confident, helpful, and professional.\n- The email should feel personally written for this particular lead.\n\nEMAIL STRUCTURE:\n\n1. Greeting\n2. Thank them for contacting Pirates Corp and mention their service interest naturally.\n3. Briefly acknowledge their needs, budget, urgency, or comments when relevant.\n4. Explain that Pirates Corp can help and offer to discuss their requirements.\n5. Include a clear but natural call to action for a discovery call or further discussion.\n6. Professional sign-off from Serina.\n\nHTML FORMATTING:\nThe Body must be valid HTML suitable for sending through Gmail.\n\nUse:\n<p>...</p> for paragraphs.\n<strong>...</strong> only when emphasis is genuinely useful.\nDo not use markdown.\nDo not use headings unless necessary.\nDo not use a long single paragraph.\n\nLEAD INFORMATION:\n\nName: {{ $json.Name }}\nEmail: {{ $json['Email Address'] }}\nPhone No: {{ $json['Phone No'] }}\nServices Interested In: {{ $json['Services Interested In'] }}\nBudget Range: {{ $json['Budget Range'] }}\nPreferred Contact Time: {{ $json['Preferred Contact Time'] }}\nAdditional Comments: {{ $json['Additional Comments'] }}\n\nPERSONALIZATION:\n\nUse the lead's:\n- First name\n- Service interest\n- Budget range when useful\n- Preferred contact time when useful\n- Additional comments when useful\n\nDo not force all of these into the email. Only use information that makes the email more natural and relevant.\n\nSUBJECT:\n\nThe subject must always start with:\n\nPirates Corp:\n\nAfter that, write a short and natural subject related to the lead's inquiry.\n\nAvoid clickbait or overly promotional subjects.\n\nTAGGING RULES:\n\nHigh-Value Lead:\n- Budget Range is greater than $10,000\n- OR Service Interest is Premium Package\n- OR Service Interest is Consulting\n- OR the lead has a clearly urgent or high-value requirement\n\nMedium-Value Lead:\n- Budget Range is $5,000-$10,000\n- OR Service Interest is Product Demo\n- OR the lead shows moderate urgency\n\nLow-Value Lead:\n- Budget Range is under $5,000\n- OR Service Interest is Basic Package\n- OR Service Interest is Introductory Consultation\n- OR the lead is mainly researching or exploring options\n\nIf multiple rules apply, use this priority:\n\nHigh-Value Lead > Medium-Value Lead > Low-Value Lead\n\nOUTPUT:\n\nReturn ONLY valid JSON.\n\nThe JSON must contain exactly these three fields:\n\n{\n  \"Subject\": \"Pirates Corp: ...\",\n  \"Body\": \"<p>...</p>\",\n  \"Tag\": \"High-Value Lead\"\n}\n\nThe field names MUST be exactly:\nSubject\nBody\nTag\n\nDo not use:\nsubject\nbody\ntag\n\nDo not include markdown.\nDo not include ```json.\nDo not add any explanation before or after the JSON.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        320,
+        80
+      ],
+      "id": "2f674422-5cce-4ec9-8ec7-cd133160465e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        256,
+        288
+      ],
+      "id": "48c0b42b-b445-42a3-9caa-cdd88994a3bf",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Nux6erUaRUvHNvYC",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Subject\": \"string\",\n  \"Body\": \"string\",\n  \"Tag\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        288
+      ],
+      "id": "19448c2a-a78a-4e4f-84af-bc78d6bfc861",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BTJAAE3FZ",
+          "mode": "list",
+          "cachedResultName": "n8n-testing"
+        },
+        "text": "=New {{ $json.output.Tag }} Alert! :rocket:\nName: {{ $('Google Sheets Trigger').item.json.Name }}\nInterest: {{ $('Google Sheets Trigger').item.json['Services Interested In'] }}\nBudget: {{ $('Google Sheets Trigger').item.json['Budget Range'] }}\nCheck the lead in Google Sheet for more details!:point_down:\nhttps://docs.google.com/spreadsheets/d/1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8/edit",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        768,
+        256
+      ],
+      "id": "602db1d5-62ff-4618-9cbd-ba0a929880fd",
+      "name": "Notify Team",
+      "webhookId": "d4a346de-7463-459f-9c78-b007f9a616cb",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "wga4MXff8ZNSXDhi",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8",
+          "mode": "list",
+          "cachedResultName": "Lead Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2039759428,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8/edit#gid=2039759428"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Google Sheets Trigger').item.json.Name }} was contacted by email {{ $now.toFormat('MMMM dd, yyyy, h:mm a') }}. The team also been notified via Slack.",
+            "Name": "={{ $('Google Sheets Trigger').item.json.Name }}",
+            "Tag": "={{ $json.output.Tag }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone No",
+              "displayName": "Phone No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Services Interested In",
+              "displayName": "Services Interested In",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Budget Range",
+              "displayName": "Budget Range",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Preferred Contact Time",
+              "displayName": "Preferred Contact Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Additional Comments",
+              "displayName": "Additional Comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        80
+      ],
+      "id": "c071a44d-c883-408f-a694-8fde40a0f6e2",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oAn26UiiwibCmQF5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8",
+          "mode": "list",
+          "cachedResultName": "Lead Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2039759428,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8/edit#gid=2039759428"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        80
+      ],
+      "id": "32d6cf6c-f3b0-47cd-9bee-9fc0e0cf6f56",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "LY3aICYxl1fMr0Eq",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Team",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1RfeTQsk295z-4hYG-YH7DHXatN5SQuRmw6bzZxlxuB8",
+      "sheetId": 2039759428,
+      "lastIndexChecked": 2
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
